@@ -19,6 +19,7 @@ export default function Home() {
   const [loadingMenus, setLoadingMenus] = useState(true);
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [remainingCals, setRemainingCals] = useState<number>(0);
+  const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
 
   const today = new Date().toLocaleDateString("ko-KR", {
     year: "numeric",
@@ -47,6 +48,14 @@ export default function Home() {
         console.error("Backend offline or error", e);
         setLoadingMenus(false);
       });
+    // 2. Get User Location
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setCoords({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        (err) => console.log("위치 정보 활용 불가:", err.message),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    }
   }, []);
 
   const handleSelectCourse = async (courseId: string) => {
@@ -60,7 +69,9 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           target_calories: parseInt(targetCalories) || 2000,
-          selected_course: courseId
+          selected_course: courseId,
+          latitude: coords?.lat || 0,
+          longitude: coords?.lon || 0
         })
       });
       

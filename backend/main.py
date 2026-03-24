@@ -23,6 +23,8 @@ app.add_middleware(
 class RecommendRequest(BaseModel):
     target_calories: int
     selected_course: str
+    latitude: float = 0.0
+    longitude: float = 0.0
 
 @app.get("/")
 def read_root():
@@ -46,7 +48,9 @@ def generate_recommendation(req: RecommendRequest):
     try:
         inputs = {
             "target_calories": req.target_calories,
-            "selected_course": req.selected_course
+            "selected_course": req.selected_course,
+            "latitude": req.latitude,
+            "longitude": req.longitude
         }
         
         # 2.2 LangGraph 파이프라인 트리거

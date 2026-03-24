@@ -23,6 +23,8 @@ class AgentState(TypedDict):
     lunch_menu_name: str
     remaining_calories: int
     nutrition_analysis: str
+    latitude: float
+    longitude: float
     final_recommendation: Any
 
 # 2.2 Date Agent
@@ -154,29 +156,39 @@ def restaurant_search_agent(state: AgentState):
     
     for rec in recommendations.recommendations:
         try:
-            # 강남역, 여의도 등 범용적 위치 (예시). 실제론 Front에서 위치 param 추가 가능.
-            query = f"가까운 {rec.menu_name} 맛집" 
+            # 사용자의 위도, 경도가 실제 값이면 쿼리에 포함하여 검색 정밀도 향상
+            loc_context = ""
+            if state.get("latitude") and state.get("longitude"):
+                # DuckDuckGo는 좌표보다는 지역명에 더 민감하지만 'near [coord]' 형태도 도움을 줌
+                loc_context = f"near {state['latitude']}, {state['longitude']}"
+            
+            # 보다 실질적인 맛집 검색 쿼리 생성
+            query = f"{rec.menu_name} 맛집 {loc_context}".strip()
             search_result = search_tool.invoke(query)
             
             prompt = f"""
-            검색 결과 내용:
+            검색어: {query}
+            사용자 현재 위치(위도,경도): {state.get('latitude')}, {state.get('longitude')}
+            검색 결과:
             {search_result}
             
-            당신은 위 검색 결과를 바탕으로, '{query}'에 해당하는 실제로 존재하는 추천 식당 정보를 추출하는 어시스턴트입니다.
-            위 내용에서 가장 추천할 만한 식당 상호명 딱 1개와 위치/특징을 의미하는 짧은 소개 문구를 JSON으로 반환하세요.
-            만약 검색 결과 안에 적절한 식당 이름이 아예 없다면 restaurant_name을 ""(빈 문자열)로 반환하세요.
+            당신은 위 검색 결과를 분석하여, 사용자의 현재 위치에서 가장 가깝거나 방문하기 좋은 실제 식당 정보를 추출하는 전문가입니다.
+            반드시 아래 조건에 맞춰 상호명을 1개 선정하세요.
+            1. 실제로 주소나 특징이 명확히 언급된 곳을 우선합니다. 
+            2. 검색 결과에 적절한 식당이 없다면 빈 문자열("")을 반환하세요.
+            3. restaurant_info에는 거리(알 수 있다면)나 대표 메뉴, 짧은 추천 이유를 평어체(~임, ~함)로 적어주세요.
             """
             
             class RestaurantInfo(BaseModel):
                 restaurant_name: str = Field(description="실제 식당 상호명. 못 찾았으면 빈 문자열")
-                restaurant_info: str = Field(description="기본 위치나 특징 등 짧은 설명")
+                restaurant_info: str = Field(description="위치 특징이나 선택 이유 등 50자 내외 설명")
             
             structured_llm = llm.with_structured_output(RestaurantInfo)
             res = structured_llm.invoke([HumanMessage(content=prompt)])
             
             rec.restaurant_name = res.restaurant_name
             rec.restaurant_info = res.restaurant_info
-            print(f"[Restaurant Finder] {rec.menu_name} -> {rec.restaurant_name} ({rec.restaurant_info})")
+            print(f"[Restaurant Finder] Local Search for '{query}': {rec.restaurant_name}")
             
         except Exception as e:
             print(f"[Restaurant Finder] Search Failed for {rec.menu_name}: {e}")
