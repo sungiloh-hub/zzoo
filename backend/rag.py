@@ -4,7 +4,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-2.0-flash-lite"
 MAX_RETRIES = 2
 
 # 2.5 Structured Output을 이용한 실시간 PDF 정보 추출 모델 설계
