@@ -1,9 +1,16 @@
+# FastAPI & Server
 fastapi==0.115.0
 uvicorn==0.30.1
+
+# LLM & LangGraph
 langchain==0.3.1
 langgraph==0.2.14
-langchain-openai==0.2.0
-langchain-chroma==0.1.4
-pdfplumber==0.11.4
+langchain-core==0.3.36
+langchain-google-genai==2.0.1  # Google Gemini 연동용
+
+# PDF Parsing
+pypdf==5.0.0
+
+# Misc Utilities
 pydantic==2.8.2
 python-dotenv==1.0.1
