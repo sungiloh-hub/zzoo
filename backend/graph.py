@@ -88,6 +88,9 @@ def recommendation_agent(state: AgentState):
 - 영양 분석 소견: {state['nutrition_analysis']}
 
 위 정보를 기반으로 저녁 메뉴 3종을 추천해 주세요.
+[중요 지시사항]
+반드시 3가지 메뉴 각각의 칼로리가 남은 목표 칼로리({state['remaining_calories']} kcal)의 ±10% 오차 범위 내에 들어오도록 양이나 재료를 조절한 특식/요리를 제안하세요. 목표를 채우기 위해 여러 음식을 하나의 세트로 묶어서 추천해도 좋습니다.
+
 반드시 아래 JSON 포맷으로만 응답하세요. 다른 텍스트는 절대 포함하지 마세요:
 {{
   "today_date": "{state['today_date']}",
@@ -127,17 +130,18 @@ def recommendation_agent(state: AgentState):
             if attempt < MAX_RETRIES - 1:
                 time.sleep(2)  # Rate Limit 대기 시간을 30초에서 2초로 대폭 단축하여 빠른 응답 유도
     
-    # 최종 실패 시 Fallback 응답 제공
+    # 예상치 못한 에러가 날 경우 잔여 칼로리를 억지로라도 맞춘 다이내믹 Fallback
+    target = state['remaining_calories']
     fallback = RecommendationResponse(
         today_date=state['today_date'],
         selected_course=state['selected_course'],
         lunch_menu=state['lunch_menu_name'],
         lunch_calories=state['lunch_calories'],
-        remaining_calories=state['remaining_calories'],
+        remaining_calories=target,
         recommendations=[
-            {"menu_name": "닭가슴살 샐러드", "calories": 350, "protein": 35, "carbs": 12, "fat": 5, "reason": "고단백 저칼로리", "alternatives": ["두부 샐러드", "연어 샐러드"], "english_name": "chicken breast salad"},
-            {"menu_name": "현미밥 된장찌개 정식", "calories": 480, "protein": 20, "carbs": 55, "fat": 10, "reason": "균형 잡힌 한식", "alternatives": ["보리밥 청국장", "잡곡밥 김치찌개"], "english_name": "korean soybean paste stew"},
-            {"menu_name": "연어 포케 볼", "calories": 420, "protein": 28, "carbs": 40, "fat": 15, "reason": "오메가3 풍부", "alternatives": ["참치 포케", "새우 포케"], "english_name": "salmon poke bowl"}
+            {"menu_name": "특제 소고기 스테이크 정식", "calories": int(target*0.95), "protein": 45, "carbs": int(target*0.1), "fat": 20, "reason": "부족한 양을 채워줄 든든한 단백질 특식", "alternatives": ["양갈비 구이", "바비큐 폭립"], "english_name": "beef steak set"},
+            {"menu_name": "해산물 로제 파스타 곱빼기", "calories": int(target*1.05), "protein": 30, "carbs": int(target*0.15), "fat": 15, "reason": "맛있게 꽉 채우는 탄수화물과 해산물의 조화", "alternatives": ["크림 리조또", "토마토 해물찜"], "english_name": "seafood rose pasta"},
+            {"menu_name": "치킨 가라아게 덮밥 세트", "calories": int(target*1.0), "protein": 40, "carbs": int(target*0.13), "fat": 25, "reason": "잔여 칼로리에 딱 맞춘 완벽한 치팅밀", "alternatives": ["돈까스 정식", "새우튀김 덮밥"], "english_name": "chicken karaage bowl"}
         ]
     )
     return {"final_recommendation": fallback}
