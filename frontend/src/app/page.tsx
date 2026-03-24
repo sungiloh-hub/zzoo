@@ -232,7 +232,7 @@ export default function Home() {
                         <div className="h-48 w-full relative bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                           {rec.english_name ? (
                             <img 
-                              src={`https://loremflickr.com/400/300/food,${rec.english_name.replace(/ /g, ',')}?lock=${Date.now() + i}`} 
+                              src={`https://loremflickr.com/400/300/food,meal?random=${encodeURIComponent(rec.english_name)}`} 
                               alt={rec.menu_name}
                               className="object-cover w-full h-full"
                               loading="lazy"

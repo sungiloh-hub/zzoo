@@ -79,22 +79,22 @@ class RAGManager:
                 "윈디쉬": {
                     "menu_name": res.윈디쉬.menu_name, 
                     "calories": res.윈디쉬.calories,
-                    "image_url": f"https://loremflickr.com/300/300/food,{res.윈디쉬.english_name.replace(' ', ',')}"
+                    "image_url": f"https://loremflickr.com/300/300/food?random=w"
                 },
                 "진국": {
                     "menu_name": res.진국.menu_name, 
                     "calories": res.진국.calories,
-                    "image_url": f"https://loremflickr.com/300/300/food,{res.진국.english_name.replace(' ', ',')}"
+                    "image_url": f"https://loremflickr.com/300/300/food?random=j"
                 },
                 "면가": {
                     "menu_name": res.면가.menu_name, 
                     "calories": res.면가.calories,
-                    "image_url": f"https://loremflickr.com/300/300/food,{res.면가.english_name.replace(' ', ',')}"
+                    "image_url": f"https://loremflickr.com/300/300/food?random=m"
                 },
                 "샐러데이": {
                     "menu_name": res.샐러데이.menu_name, 
                     "calories": res.샐러데이.calories,
-                    "image_url": f"https://loremflickr.com/300/300/food,{res.샐러데이.english_name.replace(' ', ',')}"
+                    "image_url": f"https://loremflickr.com/300/300/food?random=s"
                 }
             }
             
@@ -115,8 +115,8 @@ class RAGManager:
         except Exception as e:
             print(f"[RAGManager] AI 파싱 에러 발생, 기본값 반환: {e}")
             return {
-                "윈디쉬": {"menu_name": "돈까스김치나베", "calories": 850, "image_url": "https://loremflickr.com/300/300/food,hot,stew"},
-                "진국": {"menu_name": "통계란해물순두부찌개", "calories": 600, "image_url": "https://loremflickr.com/300/300/food,tofu,soup"},
-                "면가": {"menu_name": "안동국시", "calories": 700, "image_url": "https://loremflickr.com/300/300/food,noodle"},
-                "샐러데이": {"menu_name": "차돌부추포케샐러드", "calories": 450, "image_url": "https://loremflickr.com/300/300/food,salad"}
+                "윈디쉬": {"menu_name": "돈까스김치나베", "calories": 850, "image_url": "https://loremflickr.com/300/300/food?random=11"},
+                "진국": {"menu_name": "통계란해물순두부찌개", "calories": 600, "image_url": "https://loremflickr.com/300/300/food?random=12"},
+                "면가": {"menu_name": "안동국시", "calories": 700, "image_url": "https://loremflickr.com/300/300/food?random=13"},
+                "샐러데이": {"menu_name": "차돌부추포케샐러드", "calories": 450, "image_url": "https://loremflickr.com/300/300/food?random=14"}
             }
