@@ -74,7 +74,7 @@ def nutrition_analyzer_agent(state: AgentState):
 def recommendation_agent(state: AgentState):
     """Gemini 기반 영양 추천. 2.5 Structured Output (Pydantic) 강제 반환."""
     
-    llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.7)
+    llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.7, max_retries=0)
     
     # 2.1 Prompt에 컨텍스트 결합, Role 기반 주입
     prompt_text = f"""

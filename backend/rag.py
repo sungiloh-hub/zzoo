@@ -59,7 +59,7 @@ class RAGManager:
 
         # 2. LLM + Structured Output 객체화로 정확한 식단 추출
         try:
-            llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0, max_retries=2)
+            llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0, max_retries=0)
             structured_llm = llm.with_structured_output(TodayMenu)
             
             prompt = f"""
