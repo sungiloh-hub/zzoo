@@ -24,6 +24,11 @@ class RecommendRequest(BaseModel):
     target_calories: int
     selected_course: str
 
+@app.get("/")
+def read_root():
+    """Render 클라우드 Health Check(상태 확인) 및 기본 루트"""
+    return {"status": "ok", "message": "Calorie AI Backend is running securely!"}
+
 @app.get("/api/menu/today")
 def get_today_menu():
     """오늘 날짜를 감지하고, RAG에서 4개 코스의 메뉴 정보를 반환"""
