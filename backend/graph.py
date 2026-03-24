@@ -112,19 +112,16 @@ def recommendation_agent(state: AgentState):
   ]
 }}
 """
+    structured_llm = llm.with_structured_output(RecommendationResponse)
     
     # Rate Limit 대응 Retry 로직
     for attempt in range(MAX_RETRIES):
         try:
-            res = llm.invoke([HumanMessage(content=prompt_text)])
-            raw = res.content.strip()
-            if raw.startswith("```"):
-                raw = raw.split("```")[1]
-                if raw.startswith("json"):
-                    raw = raw[4:]
-            parsed = json.loads(raw)
-            result = RecommendationResponse(**parsed)
-            return {"final_recommendation": result}
+            res = structured_llm.invoke([
+                SystemMessage(content=SYSTEM_PROMPT),
+                HumanMessage(content=prompt_text)
+            ])
+            return {"final_recommendation": res}
         except Exception as e:
             print(f"[Recommendation Agent] Attempt {attempt+1}/{MAX_RETRIES} failed: {e}")
             if attempt < MAX_RETRIES - 1:
