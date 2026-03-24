@@ -8,8 +8,8 @@ from models import RecommendationResponse
 from prompts import SYSTEM_PROMPT
 from rag import RAGManager
 
-MODEL_NAME = "gemini-2.0-flash-lite"
-MAX_RETRIES = 3
+MODEL_NAME = "gemini-1.5-flash"
+MAX_RETRIES = 2
 
 # 2.2 LangGraph Multi-Agent 설계 (AgentState 정의)
 class AgentState(TypedDict):
@@ -125,7 +125,7 @@ def recommendation_agent(state: AgentState):
         except Exception as e:
             print(f"[Recommendation Agent] Attempt {attempt+1}/{MAX_RETRIES} failed: {e}")
             if attempt < MAX_RETRIES - 1:
-                time.sleep(30)  # Rate Limit 대기
+                time.sleep(2)  # Rate Limit 대기 시간을 30초에서 2초로 대폭 단축하여 빠른 응답 유도
     
     # 최종 실패 시 Fallback 응답 제공
     fallback = RecommendationResponse(
