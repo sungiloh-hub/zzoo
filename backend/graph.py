@@ -108,7 +108,7 @@ def recommendation_agent(state: AgentState):
       "fat": 숫자,
       "reason": "추천 이유",
       "alternatives": ["대체1", "대체2"],
-      "english_name": "음식의 대표 영어 단어 1~2개"
+      "english_name": "해당 요리의 핵심 식재료를 나타내는 영어 단어 딱 1개. loremflickr.com에서 검색 가능한 일반적인 영어 단어여야 합니다. (예: chicken, beef, salmon, rice, noodle, salad)"
     }}
   ]
 }}
