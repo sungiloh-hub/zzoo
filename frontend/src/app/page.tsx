@@ -63,6 +63,14 @@ export default function Home() {
           selected_course: courseId
         })
       });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(`🚨 AI 추천을 불러올 수 없습니다.\n오류 원인: ${errorData.detail || "서버 통신 에러"}`);
+        setLoadingRecs(false);
+        return;
+      }
+
       const data = await res.json();
       setRecommendations(data.recommendations || []);
       setRemainingCals(data.remaining_calories);

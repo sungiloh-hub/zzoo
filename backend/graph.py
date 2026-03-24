@@ -123,25 +123,19 @@ def recommendation_agent(state: AgentState):
             ])
             return {"final_recommendation": res}
         except Exception as e:
-            print(f"[Recommendation Agent] Attempt {attempt+1}/{MAX_RETRIES} failed: {e}")
+            err_msg = str(e)
+            print(f"[Recommendation Agent] Attempt {attempt+1}/{MAX_RETRIES} failed: {err_msg}")
+            
+            # API 키 오류나 할당량 초과(429) 등은 재시도 없이 즉시 에러를 발생시킴
+            if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg:
+                raise Exception("구글 AI API 키 할당량이 전부 소진되었습니다 (429 RESOURCE_EXHAUSTED). 새로운 키가 필요합니다.")
+            if "API_KEY_INVALID" in err_msg or "400" in err_msg or "403" in err_msg:
+                raise Exception("구글 AI API 키가 올바르지 않거나 권한이 없습니다.")
+                
             if attempt < MAX_RETRIES - 1:
                 time.sleep(2)  # Rate Limit 대기 시간을 30초에서 2초로 대폭 단축하여 빠른 응답 유도
-    
-    # 예상치 못한 에러가 날 경우 잔여 칼로리를 억지로라도 맞춘 다이내믹 Fallback
-    target = state['remaining_calories']
-    fallback = RecommendationResponse(
-        today_date=state['today_date'],
-        selected_course=state['selected_course'],
-        lunch_menu=state['lunch_menu_name'],
-        lunch_calories=state['lunch_calories'],
-        remaining_calories=target,
-        recommendations=[
-            {"menu_name": "특제 소고기 스테이크 정식", "calories": int(target*0.95), "protein": 45, "carbs": int(target*0.1), "fat": 20, "reason": "부족한 양을 채워줄 든든한 단백질 특식", "alternatives": ["양갈비 구이", "바비큐 폭립"], "english_name": "beef steak set"},
-            {"menu_name": "해산물 로제 파스타 곱빼기", "calories": int(target*1.05), "protein": 30, "carbs": int(target*0.15), "fat": 15, "reason": "맛있게 꽉 채우는 탄수화물과 해산물의 조화", "alternatives": ["크림 리조또", "토마토 해물찜"], "english_name": "seafood rose pasta"},
-            {"menu_name": "치킨 가라아게 덮밥 세트", "calories": int(target*1.0), "protein": 40, "carbs": int(target*0.13), "fat": 25, "reason": "잔여 칼로리에 딱 맞춘 완벽한 치팅밀", "alternatives": ["돈까스 정식", "새우튀김 덮밥"], "english_name": "chicken karaage bowl"}
-        ]
-    )
-    return {"final_recommendation": fallback}
+            else:
+                raise Exception(f"AI 추천을 생성하지 못했습니다. (원인: {err_msg})")
 
 
 # LangGraph Orchestrator 설계
