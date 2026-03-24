@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Loader2, Utensils, Soup, Salad, Coffee } from "lucide-react";
+import { Flame, Loader2, Utensils, Soup, Salad, Coffee, MapPin } from "lucide-react";
 
 const COURSE_ICONS: Record<string, any> = {
   "윈디쉬": Coffee,
@@ -253,9 +253,31 @@ export default function Home() {
                             </span>
                           </div>
                           
-                          <h3 className="text-[17px] font-bold text-slate-800 mb-6 leading-snug h-12">
-                            {rec.menu_name}
-                          </h3>
+                          <div className={`flex items-start justify-between ${rec.restaurant_name ? 'mb-3' : 'mb-6'} h-12 gap-2`}>
+                            <h3 className="text-[17px] font-bold text-slate-800 leading-snug line-clamp-2">
+                              {rec.menu_name}
+                            </h3>
+                            <a 
+                              href={`https://map.naver.com/v5/search/${encodeURIComponent(rec.restaurant_name ? rec.restaurant_name : rec.menu_name)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center space-x-1 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors flex-shrink-0"
+                            >
+                              <MapPin className="w-3.5 h-3.5" />
+                              <span className="text-[11px] font-bold whitespace-nowrap">식당 찾기</span>
+                            </a>
+                          </div>
+
+                          {rec.restaurant_name && (
+                            <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-100/80 shadow-sm">
+                              <p className="text-[12px] font-bold text-slate-800 flex items-center mb-1">
+                                <span className="mr-1.5 text-[10px]">🏪</span> {rec.restaurant_name}
+                              </p>
+                              <p className="text-[10px] text-slate-500 leading-snug line-clamp-2">
+                                {rec.restaurant_info}
+                              </p>
+                            </div>
+                          )}
                           
                           <div className="grid grid-cols-3 gap-2 mt-4 text-center">
                             <div className="bg-slate-50 p-2 rounded-xl">

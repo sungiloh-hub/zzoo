@@ -11,6 +11,10 @@ class RecommendationItem(BaseModel):
     reason: str = Field(description="이 메뉴를 추천하는 상세한 이유 (영양소 잔여량, 낮 메뉴 기반)")
     alternatives: List[str] = Field(description="유사한 대체 메뉴 옵션 리스트")
     english_name: str = Field(default="", description="음식의 대표적인 영어 명칭 (예: salmon salad, beef steak)")
+    
+    # 웹 검색 에이전트가 찾아낸 실제 상점 정보
+    restaurant_name: str = Field(default="", description="DuckDuckGo 검색으로 찾아낸 실제 식당 이름")
+    restaurant_info: str = Field(default="", description="해당 식당의 위치나 특징 등 짧은 한줄 소개")
 
 class RecommendationResponse(BaseModel):
     today_date: str = Field(description="입력된 오늘 날짜")

@@ -4,6 +4,8 @@ from datetime import datetime
 from langgraph.graph import StateGraph, START, END
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_community.tools import DuckDuckGoSearchResults
+from pydantic import BaseModel, Field
 from models import RecommendationResponse
 from prompts import SYSTEM_PROMPT
 from rag import RAGManager
@@ -139,6 +141,50 @@ def recommendation_agent(state: AgentState):
                 raise Exception(f"AI 추천을 생성하지 못했습니다. (원인: {err_msg})")
 
 
+# 2.2 Restaurant Search Agent (DuckDuckGo Local Search Tool)
+def restaurant_search_agent(state: AgentState):
+    """추천된 메뉴 정보를 받아 실제 식당을 DuckDuckGo로 검색하여 결과를 병합"""
+    recommendations = state.get("final_recommendation")
+    if not hasattr(recommendations, "recommendations"):
+        return {"final_recommendation": recommendations}
+
+    # Tool Setting
+    search_tool = DuckDuckGoSearchResults()
+    llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.1, max_retries=1)
+    
+    for rec in recommendations.recommendations:
+        try:
+            # 강남역, 여의도 등 범용적 위치 (예시). 실제론 Front에서 위치 param 추가 가능.
+            query = f"가까운 {rec.menu_name} 맛집" 
+            search_result = search_tool.invoke(query)
+            
+            prompt = f"""
+            검색 결과 내용:
+            {search_result}
+            
+            당신은 위 검색 결과를 바탕으로, '{query}'에 해당하는 실제로 존재하는 추천 식당 정보를 추출하는 어시스턴트입니다.
+            위 내용에서 가장 추천할 만한 식당 상호명 딱 1개와 위치/특징을 의미하는 짧은 소개 문구를 JSON으로 반환하세요.
+            만약 검색 결과 안에 적절한 식당 이름이 아예 없다면 restaurant_name을 ""(빈 문자열)로 반환하세요.
+            """
+            
+            class RestaurantInfo(BaseModel):
+                restaurant_name: str = Field(description="실제 식당 상호명. 못 찾았으면 빈 문자열")
+                restaurant_info: str = Field(description="기본 위치나 특징 등 짧은 설명")
+            
+            structured_llm = llm.with_structured_output(RestaurantInfo)
+            res = structured_llm.invoke([HumanMessage(content=prompt)])
+            
+            rec.restaurant_name = res.restaurant_name
+            rec.restaurant_info = res.restaurant_info
+            print(f"[Restaurant Finder] {rec.menu_name} -> {rec.restaurant_name} ({rec.restaurant_info})")
+            
+        except Exception as e:
+            print(f"[Restaurant Finder] Search Failed for {rec.menu_name}: {e}")
+            rec.restaurant_name = ""
+            rec.restaurant_info = ""
+
+    return {"final_recommendation": recommendations}
+
 # LangGraph Orchestrator 설계
 def build_graph():
     workflow = StateGraph(AgentState)
@@ -150,6 +196,7 @@ def build_graph():
     workflow.add_node("calorie_calculator_agent", calorie_calculator_agent)
     workflow.add_node("nutrition_analyzer_agent", nutrition_analyzer_agent)
     workflow.add_node("recommendation_agent", recommendation_agent)
+    workflow.add_node("restaurant_search_agent", restaurant_search_agent)
     
     # Edges 연결
     workflow.add_edge(START, "date_agent")
@@ -158,7 +205,8 @@ def build_graph():
     workflow.add_edge("course_selector_agent", "calorie_calculator_agent")
     workflow.add_edge("calorie_calculator_agent", "nutrition_analyzer_agent")
     workflow.add_edge("nutrition_analyzer_agent", "recommendation_agent")
-    workflow.add_edge("recommendation_agent", END)
+    workflow.add_edge("recommendation_agent", "restaurant_search_agent")
+    workflow.add_edge("restaurant_search_agent", END)
     
     return workflow.compile()
 
