@@ -8,7 +8,7 @@ from models import RecommendationResponse
 from prompts import SYSTEM_PROMPT
 from rag import RAGManager
 
-MODEL_NAME = "gemini-2.0-flash-lite"
+MODEL_NAME = "gemini-2.5-flash"
 MAX_RETRIES = 2
 
 # 2.2 LangGraph Multi-Agent 설계 (AgentState 정의)
